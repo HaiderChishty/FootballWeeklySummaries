@@ -371,12 +371,13 @@ def plot_rush_recap(team,Week,team_plot,headshot_dict,save):
     # rushing
     df_rushing = team_plot['rushing'].query("carries>0")
     
-    df_rushing['percent_carries'] = 100*df_rushing['percent_carries']
-    df_rushing['percent_carries'] = df_rushing['percent_carries'].round(0)
-    df_rushing['percent_carries'] = df_rushing[
-        'percent_carries'].astype(int).astype(str).apply(lambda x: (x+'%'))
+    df_rushing.loc[:,'percent_carries'] = 100*df_rushing['percent_carries']
+    df_rushing.loc[:,'percent_carries'] = df_rushing['percent_carries'].round(0)
+    df_rushing = df_rushing.copy()
+    df_rushing['percent_carries'] = df_rushing['percent_carries'].astype(int) 
+    df_rushing['percent_carries'] = df_rushing['percent_carries'].map(lambda x: f"{x}%").astype("string")
     
-    df_rushing['rushing_yards'] = df_rushing['rushing_yards'].astype(int)
+    df_rushing.loc[:,'rushing_yards'] = df_rushing['rushing_yards'].astype(int)
                                       
     df_rushing.sort_values(by='carries', inplace = True)
     df_rushing.reset_index(inplace = True,drop = True)
