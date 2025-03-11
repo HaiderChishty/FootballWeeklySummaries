@@ -460,3 +460,97 @@ def ax_headshot(hs_df, ax):
     ax.imshow(headshot)
     ax.axis('off')
     return ax
+
+#%% 
+def QB_season_recap(year,ngs_pass_df,df, ID_dict, directory):
+    
+    TeamStats_df = df[['season','week','recent_team','completions', 'attempts', 'passing_yards', 'passing_tds', 'interceptions', 
+                                             'passing_air_yards', 'passing_yards_after_catch', 'carries', 'rushing_yards', 
+                                             'rushing_tds', 'fantasy_points_ppr']].groupby(['season','recent_team','week']).sum().reset_index()
+    
+    num_weeks = TeamStats_df['week'].max()-1
+    pff_passing = [];
+    
+    for j in year:
+        for i in range(1, num_weeks+1):
+            pff_passing_week = pd.read_csv("D:/OneDrive/Documents/Python Scripts/football/PFF/"+str(j)+"/Passing/Week "+str(i)+".csv")
+            pff_passing_week['week'] = i
+            pff_passing_week['season'] = j
+            pff_passing.append(pff_passing_week)
+        
+    pff_passing = pd.concat(pff_passing, axis=0, ignore_index=True)
+    pff_passing['team_name'] = fixteamname(pff_passing['team_name'])
+    pff_passing['player'] = fixname(pff_passing['player'])
+
+    QBs_df = df.query("(position == 'QB') & ((season < 2021 & week < 17) or (season >= 2021 & week < 18))")[['name','season','week','recent_team','completions', 'attempts', 'passing_yards', 'passing_tds', 'interceptions', 
+                                             'passing_air_yards', 'passing_yards_after_catch', 'passing_epa','carries', 'rushing_yards', 
+                                             'rushing_tds', 'rushing_epa','fantasy_points_ppr']] 
+    
+    QBs_df = pd.merge(QBs_df,pff_passing[['grades_offense','grades_pass','grades_run','player','week','season']], 
+                        left_on = ['name','week','season'], right_on = ['player','week','season'], how = 'left')  
+    QBs_df.drop(['player'], axis=1, inplace = True)
+        
+    ngs_pass_df['player_display_name'] = fixname(ngs_pass_df['player_display_name'])
+    
+    QBs_df = pd.merge(QBs_df,ngs_pass_df[['expected_completion_percentage','player_display_name','week','season']], 
+                      left_on = ['name','week','season'], right_on = ['player_display_name','week','season'], how = 'left')
+    QBs_df.drop(['player_display_name'], axis=1, inplace = True)
+    
+    QBs_df = pd.merge(QBs_df,TeamStats_df[['recent_team','season','week','carries']], left_on = ['season','week','recent_team'], 
+                      right_on = ['season','week','recent_team'])
+    QBs_df.rename(columns={"carries_x": "carries", "carries_y": "team_carries"}, inplace = True)
+    
+    QBs_df['expected_completions'] = QBs_df['attempts']*QBs_df['expected_completion_percentage']/100
+    
+    QBs_Season_df = QBs_df.groupby(['season','name']).agg({'week': 'count', 'fantasy_points_ppr': 'sum', 'passing_yards': 'sum',
+                                                'passing_yards_after_catch': 'sum', 'passing_tds': 'sum', 'interceptions': 'sum',
+                                                'completions': 'sum', 'attempts': 'sum', 'expected_completions': 'sum',
+                                                'passing_air_yards': 'sum', 'passing_epa': 'sum', 'carries': 'sum', 'rushing_yards': 'sum', 
+                                                'rushing_tds': 'sum', 'team_carries': 'sum', 'rushing_epa': 'sum', 'grades_offense': 'sum',
+                                                'grades_pass': 'sum', 'grades_run': 'sum'}).reset_index()
+    QBs_Season_df.rename(columns={"week": "games_played"}, inplace = True)
+
+    QBs_Season_df['average_fantasy_points_ppr'] = QBs_Season_df['fantasy_points_ppr']/QBs_Season_df['games_played']
+    QBs_Season_df['pos_rank'] = QBs_Season_df.groupby('season')['average_fantasy_points_ppr'].rank(ascending=False)
+    
+    QBs_Season_df['average_passing_yards'] = QBs_Season_df['passing_yards']/QBs_Season_df['games_played']
+    QBs_Season_df['average_passing_air_yards'] = QBs_Season_df['passing_air_yards']/QBs_Season_df['games_played']
+    QBs_Season_df['average_passing_yards_after_catch'] = QBs_Season_df['passing_yards_after_catch']/QBs_Season_df['games_played']
+    QBs_Season_df['average_passing_tds'] = QBs_Season_df['passing_tds']/QBs_Season_df['games_played']
+    QBs_Season_df['average_interceptions'] = QBs_Season_df['interceptions']/QBs_Season_df['games_played']
+    QBs_Season_df['average_completions'] = QBs_Season_df['completions']/QBs_Season_df['games_played']
+    QBs_Season_df['average_attempts'] = QBs_Season_df['attempts']/QBs_Season_df['games_played']
+    QBs_Season_df['average_carries'] = QBs_Season_df['carries']/QBs_Season_df['games_played']
+    QBs_Season_df['average_rushing_yards'] = QBs_Season_df['rushing_yards']/QBs_Season_df['games_played']
+    QBs_Season_df['average_rushing_tds'] = QBs_Season_df['rushing_tds']/QBs_Season_df['games_played']
+
+    QBs_Season_df['average_off_grade'] = QBs_Season_df['grades_offense']/QBs_Season_df['games_played']
+    QBs_Season_df['average_pass_grade'] = QBs_Season_df['grades_pass']/QBs_Season_df['games_played']
+    QBs_Season_df['average_run_grade'] = QBs_Season_df['grades_run']/QBs_Season_df['games_played']
+
+    QBs_Season_df['completion_percentage'] = QBs_Season_df['completions']/QBs_Season_df['attempts']
+    QBs_Season_df['expected_completion_percentage'] = QBs_Season_df['expected_completions']/QBs_Season_df['attempts']
+    QBs_Season_df['cpoe'] = QBs_Season_df['completion_percentage']-QBs_Season_df['expected_completion_percentage']
+    QBs_Season_df['yards_per_attempts'] = QBs_Season_df['passing_yards']/QBs_Season_df['attempts']
+    QBs_Season_df['adot'] = QBs_Season_df['passing_air_yards']/QBs_Season_df['attempts']
+    QBs_Season_df['yac_percentage'] = QBs_Season_df['passing_yards_after_catch']/QBs_Season_df['passing_yards']
+    QBs_Season_df['percent_carries'] = QBs_Season_df['carries']/QBs_Season_df['team_carries']
+    QBs_Season_df['td_rate'] = QBs_Season_df['passing_tds']/QBs_Season_df['attempts']
+    QBs_Season_df['int_rate'] = QBs_Season_df['interceptions']/QBs_Season_df['attempts']
+    QBs_Season_df['pass_epa_per_att'] = QBs_Season_df['passing_epa']/QBs_Season_df['attempts']
+    QBs_Season_df['rush_epa_per_carry'] = QBs_Season_df['rushing_epa']/QBs_Season_df['carries']
+    
+    QBs_Season_df['a'] = 5*(QBs_Season_df['completions']/QBs_Season_df['attempts']-0.3)
+    QBs_Season_df['b'] = 0.25*(QBs_Season_df['passing_yards']/QBs_Season_df['attempts']-3)
+    QBs_Season_df['c'] = 20*(QBs_Season_df['passing_tds']/QBs_Season_df['attempts'])
+    QBs_Season_df['d'] = 2.375-(QBs_Season_df['interceptions']/QBs_Season_df['attempts']*25)
+    QBs_Season_df['passer_rating'] = (QBs_Season_df['a']+QBs_Season_df['b']+QBs_Season_df['c']+QBs_Season_df['d'])/6*100
+
+
+    QBs_Season_Summary = QBs_Season_df[['season','name','games_played','average_fantasy_points_ppr','pos_rank','average_passing_yards','average_attempts',
+                                       'average_off_grade', 'average_pass_grade', 'yards_per_attempts','completion_percentage','cpoe','average_passing_tds','td_rate','average_interceptions',
+                                       'int_rate','passer_rating','adot','average_passing_air_yards','pass_epa_per_att',
+                                       'yac_percentage','average_carries','percent_carries','average_rushing_yards', 'average_run_grade',
+                                       'average_rushing_tds','rush_epa_per_carry']]
+    
+    return QBs_Season_Summary
