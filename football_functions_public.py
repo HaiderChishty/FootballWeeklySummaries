@@ -554,3 +554,73 @@ def QB_season_recap(year,ngs_pass_df,df, ID_dict, directory):
                                        'average_rushing_tds','rush_epa_per_carry']]
     
     return QBs_Season_Summary
+
+#%% 
+def df_summary_playeravg(df_summary):
+
+    df_summary_playeravg = df_summary.groupby(['name']).agg(seasons_played=('season', 'count'),
+                                                            average_fantasy_points_ppr_mean=('average_fantasy_points_ppr', 'mean'), 
+                                                              average_fantasy_points_ppr_std=('average_fantasy_points_ppr', 'std'), 
+                                                              WORP_est_mean=('WORP_est', 'mean'), WORP_est_sum=('WORP_est', 'sum'),
+                                                              average_passing_yards_mean=('average_passing_yards', 'mean'), 
+                                                              average_passing_yards_std=('average_passing_yards', 'std'), 
+                                                              average_passing_tds_mean=('average_passing_tds', 'mean'), 
+                                                              average_passing_tds_std=('average_passing_tds', 'std'), 
+                                                              average_attempts_mean=('average_attempts', 'mean'), 
+                                                              average_attempts_std=('average_attempts', 'std'), 
+                                                              yards_per_attempts_mean=('yards_per_attempts', 'mean'), 
+                                                              yards_per_attempts_std=('yards_per_attempts', 'std'), 
+                                                              completion_percentage_mean=('completion_percentage', 'mean'), 
+                                                              completion_percentage_std=('completion_percentage', 'std'), 
+                                                              adot_mean=('adot', 'mean'), adot_std=('adot', 'std'), 
+                                                              td_rate_mean=('td_rate', 'mean'), td_rate_std=('td_rate', 'std'), 
+                                                              average_carries_mean=('average_carries', 'mean'), 
+                                                              average_carries_std=('average_carries', 'std'), 
+                                                              average_rushing_yards_mean=('average_rushing_yards', 'mean'), 
+                                                              average_rushing_yards_std=('average_rushing_yards', 'std'), 
+                                                              average_rushing_tds_mean=('average_rushing_tds', 'mean'), 
+                                                              average_rushing_tds_std=('average_rushing_tds', 'std'),
+                                                              season_count=('season','count'),
+                                                              average_off_grade_mean=('average_off_grade', 'mean'),
+                                                              average_off_grade_std=('average_off_grade', 'std'),
+                                                              average_pass_grade_mean=('average_pass_grade', 'mean'),
+                                                              average_pass_grade_std=('average_pass_grade', 'std'),
+                                                              average_run_grade_mean=('average_run_grade', 'mean'),
+                                                              average_run_grade_std=('average_run_grade', 'std')).reset_index()
+    
+    return df_summary_playeravg
+
+#%%
+def df_summary_tieravg(df_summary_playeravg):
+    df_summary_tieravg = df_summary_playeravg.groupby(['worp_tiers','type']).agg(seasons_played_mean=('seasons_played', 'mean'),
+                                                                                seasons_played_std=('seasons_played', 'std'),
+                                                                average_fantasy_points_ppr_mean=('average_fantasy_points_ppr_mean', 'mean'), 
+                                                              average_fantasy_points_ppr_std=('average_fantasy_points_ppr_mean', 'std'), 
+                                                              WORP_est_mean=('WORP_est_mean', 'mean'), WORP_est_std=('WORP_est_mean', 'sum'),
+                                                              average_passing_yards_mean=('average_passing_yards_mean', 'mean'), 
+                                                              average_passing_yards_std=('average_passing_yards_mean', 'std'), 
+                                                              average_passing_tds_mean=('average_passing_tds_mean', 'mean'), 
+                                                              average_passing_tds_std=('average_passing_tds_mean', 'std'), 
+                                                              average_attempts_mean=('average_attempts_mean', 'mean'), 
+                                                              average_attempts_std=('average_attempts_mean', 'std'), 
+                                                              yards_per_attempts_mean=('yards_per_attempts_mean', 'mean'), 
+                                                              yards_per_attempts_std=('yards_per_attempts_mean', 'std'), 
+                                                              completion_percentage_mean=('completion_percentage_mean', 'mean'), 
+                                                              completion_percentage_std=('completion_percentage_mean', 'std'), 
+                                                              adot_mean=('adot_mean', 'mean'), adot_std=('adot_mean', 'std'), 
+                                                              td_rate_mean=('td_rate_mean', 'mean'), td_rate_std=('td_rate_mean', 'std'), 
+                                                              average_carries_mean=('average_carries_mean', 'mean'), 
+                                                              average_carries_std=('average_carries_mean', 'std'), 
+                                                              average_rushing_yards_mean=('average_rushing_yards_mean', 'mean'), 
+                                                              average_rushing_yards_std=('average_rushing_yards_mean', 'std'), 
+                                                              average_rushing_tds_mean=('average_rushing_tds_mean', 'mean'), 
+                                                              average_rushing_tds_std=('average_rushing_tds_mean', 'std'),
+                                                              average_off_grade_mean=('average_off_grade_mean', 'mean'),
+                                                              average_off_grade_std=('average_off_grade_mean', 'std'),
+                                                              average_pass_grade_mean=('average_pass_grade_mean', 'mean'),
+                                                              average_pass_grade_std=('average_pass_grade_mean', 'std'),
+                                                              average_run_grade_mean=('average_run_grade_mean', 'mean'),
+                                                              average_run_grade_std=('average_run_grade_mean', 'std')).reset_index()
+    
+    return df_summary_tieravg
+    
