@@ -1,4 +1,10 @@
 # Fantasy Football Weekly Summaries 
+## 2026 Update!
+
+I've finally gotten around to updating some of my systems. While what I have now is built on the processes laid out in this repo, I've made several updates. While I intend to adequately update this repo soon, I wanted to share what my visualizations for weekly recaps currently look like:
+
+![Dashboard](Weekly Dashboard.png)
+
 ## Intro
 
 I enjoy playing fantasy football. Of course, many people do. The freedom and thrill associated with trying to assemble a superteam from NFL stars that you get to watch every week is great.
